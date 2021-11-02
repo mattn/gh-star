@@ -1,0 +1,68 @@
+#!/bin/bash
+set -e
+
+repo="mattn/gh-star"
+tag=v0.0.1
+
+extensionPath="$(dirname "$0")"
+arch="$(uname -m)"
+
+if uname -a | grep Msys > /dev/null; then
+  extensionPath=$(cygpath -u "${extensionPath}")
+fi
+
+zip=""
+
+if [[ -x "${extensionPath}/bin/gh-star" ]]; then
+  if [ "$(which go)" = "" ]; then
+    echo "go must be installed to use this gh extension on this platform"
+    exit 1
+  fi
+
+  cd "${extensionPath}/bin" > /dev/null
+  go build ../main.go
+  cd - > /dev/null
+else
+  if [[ ! -x "${extensionPath}/bin/gh-star" ]]; then
+    mkdir -p "${extensionPath}/bin"
+    cd "${extensionPath}/bin" > /dev/null
+    if uname -a | grep Msys > /dev/null; then
+      if [ $arch = "x86_64" ]; then
+        rm -f *.zip
+        gh release -R"${repo}" download "${tag}" -p "gh-star_${tag}_windows_amd64.zip" --dir="${extensionPath}/bin"
+        unzip -qq gh-star_${tag}_windows_amd64.zip
+        mv gh-star_${tag}_windows_amd64/gh-star.exe .
+        rm -rf gh-star_${tag}_windows_amd64.zip gh-star_${tag}_windows_amd64
+      fi
+    elif uname -a | grep Darwin > /dev/null; then
+      if [ $arch = "x86_64" ]; then
+        rm -f *.zip
+        gh release -R"${repo}" download "${tag}" -p "gh-star_${tag}_darwin_amd64.zip" --dir="${extensionPath}/bin"
+        unzip -qq gh-star_${tag}_darwin_amd64.zip
+        mv gh-star_${tag}_darwin_amd64/gh-star .
+        rm -rf gh-star_${tag}_darwin_amd64.zip rf gh-star_${tag}_darwin_amd64
+        chmod +x gh-star
+      elif [ $arch = "arm64" ]; then
+        rm -f *.zip
+        gh release -R"${repo}" download "${tag}" -p "gh-star_${tag}_darwin_arm64.zip" --dir="${extensionPath}/bin"
+        unzip -qq gh-star_${tag}_darwin_arm64.zip
+        mv gh-star_${tag}_darwin_arm64/gh-star .
+        rm -rf gh-star_${tag}_darwin_arm64.zip gh-star_${tag}_darwin_arm64
+        chmod +x gh-star
+      fi
+    elif uname -a | grep Linux > /dev/null; then
+      if [ $arch = "x86_64" ]; then
+        rm -f *.tar.gz
+        gh release -R"${repo}" download "${tag}" -p "gh-star" --dir="${extensionPath}/bin"
+        tar xvf gh-star_${tag}_linux_amd64.tar.gz
+        mv gh-star_${tag}_linux_amd64/gh-star .
+        rm -rf gh-star_${tag}_linux_amd64.tar.gz gh-star_${tag}_linux_amd64
+        chmod +x gh-star
+      fi
+    fi
+  fi
+  cd - > /dev/null
+fi
+
+exec "${extensionPath}/bin/gh-star" "$@"
+
