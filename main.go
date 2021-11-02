@@ -32,6 +32,12 @@ func main() {
 		return
 	}
 
+	token := os.Getenv("GITHUB_TOKEN")
+	if len(token) == 0 {
+		fmt.Fprintln(os.Stderr, "GITHUB_TOKEN is not set")
+		os.Exit(1)
+	}
+
 	urls := map[string]struct{}{}
 
 	if flag.NArg() == 0 {
@@ -57,7 +63,7 @@ func main() {
 	}
 
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(oauth2.NoContext, ts)
 
