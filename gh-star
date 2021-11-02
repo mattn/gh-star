@@ -13,16 +13,7 @@ fi
 
 zip=""
 
-if [[ -x "${extensionPath}/bin/gh-star" ]]; then
-  if [ "$(which go)" = "" ]; then
-    echo "go must be installed to use this gh extension on this platform"
-    exit 1
-  fi
-
-  cd "${extensionPath}/bin" > /dev/null
-  go build ../main.go
-  cd - > /dev/null
-else
+if [[ ! -x "${extensionPath}/bin/gh-star" ]]; then
   if [[ ! -x "${extensionPath}/bin/gh-star" ]]; then
     mkdir -p "${extensionPath}/bin"
     cd "${extensionPath}/bin" > /dev/null
