@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -24,22 +25,35 @@ var revision = "HEAD"
 func main() {
 	var showVersion bool
 	flag.BoolVar(&showVersion, "V", false, "Print the version")
+	flag.Parse()
+
 	if showVersion {
 		fmt.Printf("%s %s (rev: %s/%s)\n", name, version, revision, runtime.Version())
 		return
 	}
 
-	b, err := exec.Command("git", "remote", "-v").Output()
-	if err != nil {
-		os.Exit(1)
-	}
 	urls := map[string]struct{}{}
-	for _, line := range strings.Split(string(b), "\n") {
-		tok := strings.Fields(line)
-		if len(tok) < 2 {
-			continue
+
+	if flag.NArg() == 0 {
+		var buf bytes.Buffer
+		cmd := exec.Command("git", "remote", "-v")
+		cmd.Stderr = &buf
+		b, err := cmd.Output()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, buf.String())
+			os.Exit(1)
 		}
-		urls[tok[1]] = struct{}{}
+		for _, line := range strings.Split(string(b), "\n") {
+			tok := strings.Fields(line)
+			if len(tok) < 2 {
+				continue
+			}
+			urls[tok[1]] = struct{}{}
+		}
+	} else {
+		for _, arg := range flag.Args() {
+			urls[arg] = struct{}{}
+		}
 	}
 
 	ts := oauth2.StaticTokenSource(
