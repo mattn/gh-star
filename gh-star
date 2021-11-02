@@ -53,7 +53,7 @@ else
     elif uname -a | grep Linux > /dev/null; then
       if [ $arch = "x86_64" ]; then
         rm -f *.tar.gz
-        gh release -R"${repo}" download "${tag}" -p "gh-star" --dir="${extensionPath}/bin"
+        gh release -R"${repo}" download "${tag}" -p "gh-star_${tag}_linux_amd64.tar.gz" --dir="${extensionPath}/bin"
         tar xvf gh-star_${tag}_linux_amd64.tar.gz
         mv gh-star_${tag}_linux_amd64/gh-star .
         rm -rf gh-star_${tag}_linux_amd64.tar.gz gh-star_${tag}_linux_amd64
